@@ -30,7 +30,7 @@ public class Main {
             }else {
                 mostrarInfo(moneda);
             }
-
+    scan.close();
     }
     private static int totalMonedas(){
         try{
@@ -69,7 +69,7 @@ public class Main {
 
             for(int i=0; i<=totalMonedas; i+=100){
                 HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create("https://api.coinlore.net/api/tickers/?start=&limit=100"))
+                        .uri(URI.create("https://api.coinlore.net/api/tickers/?start="+i+"&limit=100"))
                         .GET()
                         .build();
 
@@ -84,7 +84,7 @@ public class Main {
                     String nombreMoneda = moneda.get("name").getAsString().toLowerCase();
                     String simboloMoneda = moneda.get("symbol").getAsString().toLowerCase();
 
-                    if(nombreMoneda.equals(nombreMoneda) || simboloMoneda.equals(nombreMoneda)){
+                    if(nombreMoneda.equals(nombre) || simboloMoneda.equals(nombre)){
                         return moneda;
                     }
                 }
