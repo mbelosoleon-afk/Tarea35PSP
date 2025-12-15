@@ -19,7 +19,7 @@ public class Main {
     public static void main(String[] args) {
         Scanner scan = new Scanner(System.in);
 
-        System.out.println("Introduce el nombre/simbolo de la moneda que deseas buscar");
+        System.out.println("Introduce el nombre/símbolo de la moneda que deseas buscar");
 
         String nomeMoneda = scan.nextLine().toLowerCase();
 
@@ -87,6 +87,8 @@ public class Main {
 
                     if(nombreMoneda.equals(nombre) || simboloMoneda.equals(nombre)){
                         return moneda;
+                    }else {
+                        return null;
                     }
                 }
 
