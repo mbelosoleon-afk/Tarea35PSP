@@ -1,76 +1,92 @@
 package org.example;
 
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.Scanner;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
+
 public class Main {
     public static void main(String[] args) {
+            Scanner scan = new Scanner(System.in);
 
-        try{
-            String monedaUsuario = "Bitcoin";
+            System.out.println("Introduce el nombre de la moneda que deseas buscar");
 
-            String idMoneda = obtenerIdMoneda(monedaUsuario);
+            String nomeMoneda = scan.nextLine().toLowerCase();
 
-            if(idMoneda == null){
+            JsonObject moneda = buscarMoneda(nomeMoneda);
+
+            if(moneda == null){
                 System.err.println("La moneda no existe");
-                return;
             }else {
-                System.out.println("La moneda sí existe");
+                mostrarInfo(moneda);
             }
 
-            HttpClient cliente = HttpClient.newHttpClient();
+    }
+    private static int totalMonedas(){
+        try{
+            HttpClient cliente = HttpClient.newBuilder()
+                    .connectTimeout(Duration.ofSeconds(5))
+                    .build();
 
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("https://api.coinlore.net/api/ticker/?id="))
+                    .uri(URI.create("https://api.coinlore.net/api/global/"))
                     .GET()
                     .build();
 
-            HttpResponse<String> response = cliente.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> json = cliente.send(request, HttpResponse.BodyHandlers.ofString());
 
-            System.out.println("Moneda info: ");
-            System.out.println(response.body());
+            Gson gson = new Gson();
+            JsonArray array = gson.fromJson(json.body(),JsonArray.class);
+            JsonObject datos = array.get(0).getAsJsonObject();
+
+            return datos.get("coins_count").getAsInt();
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
+        }catch (JsonSyntaxException e){
+            throw new RuntimeException(e);
         }
-
     }
-
-    public static String obtenerIdMoneda(String monedaUsuario){
-
-        try{
-            HttpClient cliente = HttpClient.newHttpClient();
-
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("https://api.coinlore.net/api/tickers/"))
-                    .GET()
+    public static JsonObject buscarMoneda(String nombre){
+        try {
+            HttpClient cliente = HttpClient.newBuilder()
+                    .connectTimeout(Duration.ofSeconds(5))
                     .build();
 
-            HttpResponse response = cliente.send(request, HttpResponse.BodyHandlers.ofString());
+            int totalMonedas = totalMonedas();
 
+            for(int i=0; i<=totalMonedas; i+=100){
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create("https://api.coinlore.net/api/tickers/?start=&limit=100"))
+                        .GET()
+                        .build();
 
-            JSONObject json = new JSONObject(response.body());
-            JSONArray array = json.getJSONArray("data");
+                HttpResponse<String> response = cliente.send(request, HttpResponse.BodyHandlers.ofString());
 
-            for(int i=0; i<array.length(); i++){
+                Gson gson = new Gson();
+                JsonObject respuestaJson = gson.fromJson(response.body(), JsonObject.class);
+                JsonArray datos = respuestaJson.getAsJsonArray("data");
 
-                JSONObject moneda = array.getJSONObject(i);
+                for(int m=0; m<datos.size(); m++){
+                    JsonObject moneda = datos.get(m).getAsJsonObject();
+                    String nombreMoneda = moneda.get("name").getAsString().toLowerCase();
+                    String simboloMoneda = moneda.get("symbol").getAsString().toLowerCase();
 
-                String name = moneda.getString("name");
-
-                if(name.equals(monedaUsuario)){
-                    return moneda.getString("id");
+                    if(nombreMoneda.equals(nombreMoneda) || simboloMoneda.equals(nombreMoneda)){
+                        return moneda;
+                    }
                 }
 
             }
@@ -80,8 +96,21 @@ public class Main {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-
-
         return null;
+    }
+
+    private static void mostrarInfo(JsonObject moneda){
+        String nombreMoneda = moneda.get("name").getAsString();
+        String simboloMoneda = moneda.get("symbol").getAsString();
+        int rankMoneda = moneda.get("rank").getAsInt();
+        String usdMoneda = moneda.get("price_usd").getAsString();
+        String tiempoMoneda = moneda.get("percent_change_24h").getAsString();
+
+        System.out.println("Nombre: " + nombreMoneda);
+        System.out.println("Símbolo: " + simboloMoneda);
+        System.out.println("Rank: " + rankMoneda);
+        System.out.println("Precio: " + usdMoneda);
+        System.out.println("Variación del último día: " + tiempoMoneda);
+
     }
 }
