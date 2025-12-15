@@ -17,20 +17,20 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-            Scanner scan = new Scanner(System.in);
+        Scanner scan = new Scanner(System.in);
 
-            System.out.println("Introduce el nombre de la moneda que deseas buscar");
+        System.out.println("Introduce el nombre/simbolo de la moneda que deseas buscar");
 
-            String nomeMoneda = scan.nextLine().toLowerCase();
+        String nomeMoneda = scan.nextLine().toLowerCase();
 
-            JsonObject moneda = buscarMoneda(nomeMoneda);
+        JsonObject moneda = buscarMoneda(nomeMoneda);
 
-            if(moneda == null){
-                System.err.println("La moneda no existe");
-            }else {
-                mostrarInfo(moneda);
-            }
-    scan.close();
+        if(moneda == null){
+            System.err.println("La moneda no existe");
+        }else {
+            mostrarInfo(moneda);
+        }
+        scan.close();
     }
     private static int totalMonedas(){
         try{
@@ -69,8 +69,9 @@ public class Main {
 
             for(int i=0; i<=totalMonedas; i+=100){
                 HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create("https://api.coinlore.net/api/tickers/?start="+i+"&limit=100"))
+                        .uri(URI.create("https://api.coinlore.net/api/tickers/?start=&limit=100"))
                         .GET()
+
                         .build();
 
                 HttpResponse<String> response = cliente.send(request, HttpResponse.BodyHandlers.ofString());
