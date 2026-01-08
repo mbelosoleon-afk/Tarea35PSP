@@ -69,9 +69,8 @@ public class Main {
 
             for(int i=0; i<=totalMonedas; i+=100){
                 HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create("https://api.coinlore.net/api/tickers/?start=&limit=100"))
+                        .uri(URI.create("https://api.coinlore.net/api/tickers/?start="+i+"&limit=100"))
                         .GET()
-
                         .build();
 
                 HttpResponse<String> response = cliente.send(request, HttpResponse.BodyHandlers.ofString());
@@ -87,8 +86,6 @@ public class Main {
 
                     if(nombreMoneda.equals(nombre) || simboloMoneda.equals(nombre)){
                         return moneda;
-                    }else {
-                        return null;
                     }
                 }
 
